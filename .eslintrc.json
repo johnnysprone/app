@@ -1,0 +1,67 @@
+{
+  "env": { "browser": true, "node": true },
+  "extends": [
+    "airbnb",
+    "eslint:recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:jsx-a11y/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:react/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": { "jsx": true },
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "eslint-plugin-import-helpers",
+    "import",
+    "react",
+    "react-hooks"
+  ],
+  "rules": {
+    "import/extensions": ["error", "never"],
+    "import-helpers/order-imports": [
+      "error",
+      {
+        "newlinesBetween": "always",
+        "groups": [
+          "module",
+          "/^(Api|Component|Config|Hook|Interface|Layout|Policy|Reducer|Screen|Store|Type|Utility)/",
+          ["parent", "sibling", "index"]
+        ],
+        "alphabetize": { "order": "asc", "ignoreCase": true }
+      }
+    ],
+    "import/no-cycle": ["error", { "maxDepth": 1 }],
+    "react/jsx-filename-extension": [
+      "error",
+      {
+        "extensions": [".js", ".tsx", ".ts", ".tsx"]
+      }
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": { "extensions": [".js", ".jsx"] },
+      "typescript": { "extensions": [".ts", ".tsx"] },
+      "alwaysTryTypes": true,
+      "project": "./src/App"
+    }
+  },
+  "overrides": [
+    {
+      "files": ["*.js", "*.jsx", "*.ts", "*.tsx"],
+      "rules": { "no-undef": "off" }
+    }
+  ]
+}

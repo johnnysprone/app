@@ -1,0 +1,53 @@
+{
+  "overrides": [
+    {
+      "files": ["*.css", "*.scss"],
+      "options": {
+        "bracketSameLine": false,
+        "endOfLine": "lf",
+        "printWidth": 80,
+        "singleAttributePerLine": true,
+        "singleQuote": true,
+        "tabWidth": 4,
+        "trailingComma": "all",
+        "useTabs": true
+      }
+    },
+    {
+      "files": ["*.js", "*.jsx"],
+      "options": {
+        "bracketSameLine": false,
+        "endOfLine": "lf",
+        "printWidth": 80,
+        "singleAttributePerLine": true,
+        "singleQuote": true,
+        "tabWidth": 2,
+        "trailingComma": "all"
+      }
+    },
+    {
+      "files": ["*.json"],
+      "options": {
+        "bracketSameLine": false,
+        "endOfLine": "lf",
+        "printWidth": 80,
+        "singleAttributePerLine": true,
+        "singleQuote": true,
+        "tabWidth": 2,
+        "trailingComma": "all"
+      }
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "options": {
+        "bracketSameLine": false,
+        "endOfLine": "lf",
+        "printWidth": 80,
+        "singleAttributePerLine": true,
+        "singleQuote": true,
+        "tabWidth": 2,
+        "trailingComma": "all"
+      }
+    }
+  ]
+}
