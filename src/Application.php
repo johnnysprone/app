@@ -14,19 +14,32 @@ declare(strict_types=1);
  * @since     3.3.0
  * @license   https://opensource.org/licenses/mit-license.php MIT License
  */
+
 namespace App;
 
+use App\Middleware\DataHandlerMiddleware;
+use Authentication\AuthenticationService;
+use Authentication\AuthenticationServiceInterface;
+use Authentication\AuthenticationServiceProviderInterface;
+use Authentication\Identifier\IdentifierInterface;
+use Authentication\Middleware\AuthenticationMiddleware;
+use Authorization\AuthorizationService;
+use Authorization\AuthorizationServiceInterface;
+use Authorization\AuthorizationServiceProviderInterface;
+use Authorization\Middleware\AuthorizationMiddleware;
+use Authorization\Policy\OrmResolver;
 use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Datasource\FactoryLocator;
 use Cake\Error\Middleware\ErrorHandlerMiddleware;
 use Cake\Http\BaseApplication;
 use Cake\Http\Middleware\BodyParserMiddleware;
-use Cake\Http\Middleware\CsrfProtectionMiddleware;
+// use Cake\Http\Middleware\CsrfProtectionMiddleware;
 use Cake\Http\MiddlewareQueue;
 use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Application setup class.
@@ -34,7 +47,9 @@ use Cake\Routing\Middleware\RoutingMiddleware;
  * This defines the bootstrapping logic and middleware layers you
  * want to use in your application.
  */
-class Application extends BaseApplication
+class Application extends BaseApplication implements
+    AuthenticationServiceProviderInterface,
+    AuthorizationServiceProviderInterface
 {
     /**
      * Load all the application configuration and bootstrap logic.
@@ -98,11 +113,19 @@ class Application extends BaseApplication
             // https://book.cakephp.org/4/en/controllers/middleware.html#body-parser-middleware
             ->add(new BodyParserMiddleware())
 
+            // Middleware de configurações dos dados
+            ->add(new DataHandlerMiddleware())
+
             // Cross Site Request Forgery (CSRF) Protection Middleware
             // https://book.cakephp.org/4/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
-            ->add(new CsrfProtectionMiddleware([
-                'httponly' => true,
-            ]));
+            // ->add(new CsrfProtectionMiddleware([
+            //     'httponly' => true,
+            // ]))
+
+            // Middleware de autenticação do sistema
+            ->add(new AuthenticationMiddleware($this))
+            // Middleware de autorização do sistema
+            ->add(new AuthorizationMiddleware($this));
 
         return $middlewareQueue;
     }
@@ -116,6 +139,53 @@ class Application extends BaseApplication
      */
     public function services(ContainerInterface $container): void
     {
+    }
+
+    /**
+     * Método getAuthenticationService
+     *
+     * Configura o serviço de autenticação do sistema
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request O objeto da requisição
+     * @return \Authentication\AuthenticationServiceInterface
+     */
+    public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
+    {
+        $service = new AuthenticationService();
+        $fields = [
+            IdentifierInterface::CREDENTIAL_USERNAME => 'email',
+            IdentifierInterface::CREDENTIAL_PASSWORD => 'senha',
+        ];
+        $resolver = ['className' => 'Authentication.Orm', 'userModel' => 'Usuarios'];
+
+        // Carrega os identificadores
+        $service->loadIdentifier('Authentication.Password', ['resolver' => $resolver, 'fields' => $fields]);
+        $service->loadIdentifier('Authentication.JwtSubject', ['resolver' => $resolver]);
+
+        // Carrega os autenticadores
+        $service->loadAuthenticator('Authentication.Form', ['fields' => $fields]);
+        $service->loadAuthenticator('Authentication.Jwt', [
+            'secretKey' => file_get_contents(CONFIG . '/jwt.pem'),
+            'algorithm' => 'RS256',
+            'returnPayload' => false,
+        ]);
+
+        return $service;
+    }
+
+    /**
+     * Método getAuthorizationService
+     *
+     * Configura o serviço de autorização do sistema
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request O objeto da requisição
+     * @return \Authorization\AuthorizationServiceInterface
+     */
+    public function getAuthorizationService(ServerRequestInterface $request): AuthorizationServiceInterface
+    {
+        $resolver = new OrmResolver();
+
+        return new AuthorizationService($resolver);
     }
 
     /**
@@ -133,5 +203,6 @@ class Application extends BaseApplication
         $this->addPlugin('Migrations');
 
         // Load more plugins here
+        $this->addPlugin('Authorization');
     }
 }

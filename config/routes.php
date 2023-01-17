@@ -88,4 +88,24 @@ return static function (RouteBuilder $routes) {
      * });
      * ```
      */
+    $routes->prefix('api', function (RouteBuilder $routes) {
+        $routes->setExtensions(['json', 'xml']);
+        $actions = [
+            'index' => 'index',
+            'create' => 'adicionar',
+            'view' => 'visualizar',
+            'update' => 'alterar',
+            'delete' => 'remover',
+        ];
+
+        // v1
+        $routes->prefix('v1', function (RouteBuilder $routes) use ($actions) {
+            $routes->resources('Sessoes', ['actions' => $actions]);
+            $routes->resources('Usuarios', ['actions' => $actions]);
+
+            $routes->fallbacks(DashedRoute::class);
+        });
+
+        $routes->fallbacks(DashedRoute::class);
+    });
 };

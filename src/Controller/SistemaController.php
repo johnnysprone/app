@@ -21,6 +21,8 @@ class SistemaController extends AppController
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
+
+        $this->Authentication->allowUnauthenticated(['index']);
     }
 
     /**
@@ -32,5 +34,7 @@ class SistemaController extends AppController
      */
     public function index(): void
     {
+        // Ignora a autorização
+        $this->Authorization->skipAuthorization();
     }
 }

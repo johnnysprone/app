@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Controller\Controller;
+use Cake\Event\EventInterface;
 
 /**
  * Application Controller
@@ -25,6 +26,8 @@ use Cake\Controller\Controller;
  * will inherit them.
  *
  * @link https://book.cakephp.org/4/en/controllers.html#the-app-controller
+ * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
+ * @property \Authorization\Controller\Component\AuthorizationComponent $Authorization
  */
 class AppController extends Controller
 {
@@ -41,6 +44,8 @@ class AppController extends Controller
     {
         parent::initialize();
 
+        $this->loadComponent('Authentication.Authentication');
+        $this->loadComponent('Authorization.Authorization');
         $this->loadComponent('Flash');
         $this->loadComponent('RequestHandler');
 
@@ -49,5 +54,20 @@ class AppController extends Controller
          * see https://book.cakephp.org/4/en/controllers/components/form-protection.html
          */
         //$this->loadComponent('FormProtection');
+    }
+
+    /**
+     * beforeRender callback.
+     *
+     * @param \Cake\Event\EventInterface $event Event.
+     * @return \Cake\Http\Response|null|void
+     */
+    public function beforeRender(EventInterface $event)
+    {
+        // Configura a renderização de requisições da API
+        $parameters = $this->request->getAttribute('params');
+        if (array_key_exists('prefix', $parameters) && str_contains($parameters['prefix'], 'Api')) {
+            $this->RequestHandler->renderAs($this, 'json');
+        }
     }
 }

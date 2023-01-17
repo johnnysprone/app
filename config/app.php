@@ -421,4 +421,12 @@ return [
     'Session' => [
         'defaults' => 'php',
     ],
+
+    /**
+     * DebugKit
+     */
+    'DebugKit' => [
+        'forceEnable' => true,
+        'ignoreAuthorization' => true,
+    ],
 ];
